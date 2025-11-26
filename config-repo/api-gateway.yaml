@@ -20,13 +20,13 @@ spring:
           predicates:
             - Path=/categories/**
           filters:
-            - JwtAuthenticationFilter
+            - name: JwtAuthenticationFilter
         - id: product-service
           uri: lb://product-service
           predicates:
             - Path=/products/**
           filters:
-            - JwtAuthenticationFilter
+            - name: JwtAuthenticationFilter
 
 jwt:
   secret-key: ee570ba7b8489d45394e8445d3b897f3447023e14e547238d7a50b8ea037dacd

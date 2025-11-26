@@ -1,5 +1,6 @@
-package com.plinplin.api_gateway.util;
+package com.plinplin.api_gateway.filter;
 
+import com.plinplin.api_gateway.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
