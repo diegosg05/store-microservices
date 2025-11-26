@@ -20,6 +20,20 @@ spring:
           predicates:
             - Path=/products/**
 
+jwt:
+  secret-key: ee570ba7b8489d45394e8445d3b897f3447023e14e547238d7a50b8ea037dacd
+  access-expiration-ms: 3600000 # 1 hora
+  refresh-expiration-ms: 604800000 # 7 días
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    fetch-registry: true
+    register-with-eureka: true
+  instance:
+    instance-id: ${spring.application.name}:${random.value}
+
 # Configuracion de Zipkin (Tracing)
 management:
   tracing:
