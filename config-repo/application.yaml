@@ -1,0 +1,9 @@
+server:
+  port: 8080
+
+# Configuración de Actuator global
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*" # Exponer todos los endpoints de monitoreo
