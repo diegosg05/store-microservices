@@ -6,8 +6,6 @@ spring:
     name: api-gateway
   cloud:
     gateway:
-      default-filters:
-        - name: JwtAuthenticationFilter
       discovery:
         locator:
           enabled: true
@@ -21,10 +19,14 @@ spring:
           uri: lb://category-service
           predicates:
             - Path=/categories/**
+          filters:
+            - JwtAuthenticationFilter
         - id: product-service
           uri: lb://product-service
           predicates:
             - Path=/products/**
+          filters:
+            - JwtAuthenticationFilter
 
 jwt:
   secret-key: ee570ba7b8489d45394e8445d3b897f3447023e14e547238d7a50b8ea037dacd
