@@ -3,7 +3,7 @@ package com.plinplin.api_gateway.filter;
 import com.plinplin.api_gateway.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
-import org.springframework.cloud.gateway.filter.GatewayFilterChain;
+import org.springframework.cloud.gateway.filter.factory.GatewayFilterFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
@@ -15,7 +15,7 @@ import java.util.List;
 
 @Component
 @RequiredArgsConstructor
-public class JwtAuthenticationFilter implements GatewayFilter {
+public class JwtAuthenticationFilter implements GatewayFilterFactory<Object> {
 
     private final JwtUtil jwtUtil;
 
@@ -28,43 +28,53 @@ public class JwtAuthenticationFilter implements GatewayFilter {
     );
 
     @Override
-    public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        ServerHttpRequest request = exchange.getRequest();
-        final String path = request.getURI().getPath();
+    public GatewayFilter apply(Object config) {
+        return (exchange, chain) -> {
+            ServerHttpRequest request = exchange.getRequest();
+            final String path = request.getURI().getPath();
 
-        if (OPEN_ENDPOINTS.stream().anyMatch(path::contains)) {
-            return chain.filter(exchange);
-        }
+            if (OPEN_ENDPOINTS.stream().anyMatch(path::contains)) {
+                return chain.filter(exchange);
+            }
 
-        var tokenCookie = request.getCookies().getFirst("access_token");
+            var tokenCookie = request.getCookies().getFirst("access_token");
 
-        String jwt = null;
-        if (tokenCookie != null) {
-            jwt = tokenCookie.getValue();
-        }
+            String jwt = null;
+            if (tokenCookie != null) {
+                jwt = tokenCookie.getValue();
+            }
 
-        if (jwt == null || !jwtUtil.isTokenValid(jwt)) {
-            // Si no hay token o es inválido/expirado, rechazar
-            return this.onError(exchange, HttpStatus.UNAUTHORIZED);
-        }
+            if (jwt == null || !jwtUtil.isTokenValid(jwt)) {
+                return this.onError(exchange, HttpStatus.UNAUTHORIZED);
+            }
 
-        try {
-            String username = jwtUtil.extractUsername(jwt);
-            String role = jwtUtil.extractClaim(jwt, "role", String.class);
+            try {
+                String username = jwtUtil.extractUsername(jwt);
+                String role = jwtUtil.extractClaim(jwt, "role", String.class);
 
-            ServerHttpRequest modifiedRequest = request.mutate()
-                    .header("X-Auth-User", username)
-                    .header("X-Auth-Role", role)
-                    .build();
+                ServerHttpRequest modifiedRequest = request.mutate()
+                        .header("X-Auth-User", username)
+                        .header("X-Auth-Role", role)
+                        .build();
 
-            return chain.filter(exchange.mutate().request(modifiedRequest).build());
+                return chain.filter(exchange.mutate().request(modifiedRequest).build());
 
-        } catch (Exception e) {
-            // Error al parsear el token
-            return this.onError(exchange, HttpStatus.FORBIDDEN);
-        }
+            } catch (Exception e) {
+                return this.onError(exchange, HttpStatus.FORBIDDEN);
+            }
+        };
     }
 
+    @Override
+    public List<String> shortcutFieldOrder() {
+        return List.of();
+    }
+
+    @Override
+    public Class<Object> getConfigClass() {
+        return Object.class;
+    }
+    
     private Mono<Void> onError(ServerWebExchange exchange, HttpStatus httpStatus) {
         ServerHttpResponse response = exchange.getResponse();
         response.setStatusCode(httpStatus);

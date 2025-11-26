@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor
@@ -25,6 +26,8 @@ public class AuthController {
 
     private final JwtUtilPort jwtUtil;
 
+    private final PasswordEncoder encoder;
+
     @Value("${jwt.access-expiration-ms}")
     private long ACCESS_EXPIRATION_TIME;
 
@@ -34,7 +37,10 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<AuthResponseDto> register(@RequestBody AuthRegisterDto authRegisterDto, HttpServletResponse response) {
 
-        var userSaved = service.register(mapper.toDomain(authRegisterDto));
+        var authRegister = mapper.toDomain(authRegisterDto);
+        authRegister.setPassword(encoder.encode(authRegister.getPassword()));
+
+        var userSaved = service.register(authRegister);
 
         var accessToken = jwtUtil.generateAccessToken(userSaved);
 
