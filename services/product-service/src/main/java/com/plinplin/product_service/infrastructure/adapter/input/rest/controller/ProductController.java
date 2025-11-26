@@ -2,6 +2,7 @@ package com.plinplin.product_service.infrastructure.adapter.input.rest.controlle
 
 import com.plinplin.product_service.application.input.ProductServicePort;
 import com.plinplin.product_service.application.output.CategoryClient;
+import com.plinplin.product_service.domain.model.Category;
 import com.plinplin.product_service.infrastructure.adapter.input.rest.dto.ProductRequestDto;
 import com.plinplin.product_service.infrastructure.adapter.input.rest.dto.ProductResponseDto;
 import com.plinplin.product_service.infrastructure.adapter.input.rest.dto.ProductStockUpdateDto;
@@ -27,7 +28,7 @@ public class ProductController {
     public ResponseEntity<List<ProductResponseDto>> findAll() {
         var products = service.getAllProducts().stream()
                 .map(product -> {
-                    var category = categoryClient.getCategory(product.getCategoryId());
+                    var category = validateCategory(product.getCategoryId());
                     return mapper.toDto(product, mapper.toDto(category));
                 })
                 .toList();
@@ -41,7 +42,7 @@ public class ProductController {
 
         return optionalProduct
                 .map(product -> {
-                    var category = categoryClient.getCategory(product.getId());
+                    var category = validateCategory(product.getCategoryId());
                     return ResponseEntity.ok(mapper.toDto(product, mapper.toDto(category)));
                 })
                 .orElse(ResponseEntity.notFound().build());
@@ -49,7 +50,7 @@ public class ProductController {
 
     @PostMapping
     public ResponseEntity<ProductResponseDto> save(@RequestBody ProductRequestDto newProduct) {
-        var category = categoryClient.getCategory(newProduct.categoryId());
+        var category = validateCategory(newProduct.categoryId());
         var productSaved = service.createProduct(mapper.toDomain(newProduct));
 
         return ResponseEntity.created(
@@ -59,7 +60,7 @@ public class ProductController {
 
     @PutMapping
     public ResponseEntity<Void> update(@RequestBody ProductUpdateDto updateProduct) {
-        categoryClient.getCategory(updateProduct.categoryId());
+        validateCategory(updateProduct.categoryId());
         service.updateProduct(mapper.UpdateToDomain(updateProduct));
 
         return ResponseEntity.noContent().build();
@@ -79,7 +80,7 @@ public class ProductController {
 
     @GetMapping("/category/{id}")
     public ResponseEntity<List<ProductResponseDto>> findAllByCategoryId(@PathVariable Long id) {
-        var category = categoryClient.getCategory(id);
+        var category = validateCategory(id);
 
         var products = service.findProductsByCategoryId(id).stream()
                 .map(product ->
@@ -100,5 +101,16 @@ public class ProductController {
         service.updateStock(stockUpdate.id(), stockUpdate.quantity());
 
         return ResponseEntity.noContent().build();
+    }
+
+    private Category validateCategory(Long categoryId) {
+        ResponseEntity<Category> response = categoryClient.getCategory(categoryId);
+
+        if (!response.getStatusCode().is2xxSuccessful() || response.getBody() == null) {
+            throw new RuntimeException("Category with ID " + categoryId +
+                    " does not exist or Category Service is unavailable.");
+        }
+
+        return response.getBody();
     }
 }

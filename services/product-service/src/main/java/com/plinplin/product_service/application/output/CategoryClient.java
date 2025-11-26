@@ -2,6 +2,7 @@ package com.plinplin.product_service.application.output;
 
 import com.plinplin.product_service.domain.model.Category;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
@@ -9,5 +10,5 @@ import org.springframework.web.bind.annotation.PathVariable;
 public interface CategoryClient {
 
     @GetMapping("/categories/{id}")
-    Category getCategory(@PathVariable Long id);
+    ResponseEntity<Category> getCategory(@PathVariable Long id);
 }

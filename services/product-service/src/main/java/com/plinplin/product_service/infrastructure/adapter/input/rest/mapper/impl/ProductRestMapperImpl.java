@@ -14,7 +14,6 @@ public class ProductRestMapperImpl implements ProductRestMapper {
     @Override
     public Product toDomain(ProductRequestDto productRequestDto) {
         return Product.builder()
-                .id(productRequestDto.categoryId())
                 .name(productRequestDto.name())
                 .price(productRequestDto.price())
                 .stock(productRequestDto.stock())
@@ -27,7 +26,7 @@ public class ProductRestMapperImpl implements ProductRestMapper {
     @Override
     public Product UpdateToDomain(ProductUpdateDto productUpdateDto) {
         return Product.builder()
-                .id(productUpdateDto.categoryId())
+                .id(productUpdateDto.id())
                 .name(productUpdateDto.name())
                 .price(productUpdateDto.price())
                 .stock(productUpdateDto.stock())

@@ -1,7 +1,6 @@
 package com.plinplin.product_service.infrastructure.adapter.output.persistence.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
@@ -12,6 +11,9 @@ import lombok.*;
 @NoArgsConstructor
 @Builder
 public class ProductEntity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
     private String description;
