@@ -12,6 +12,7 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: true
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
 
 jwt:
   secret-key: ee570ba7b8489d45394e8445d3b897f3447023e14e547238d7a50b8ea037dacd
