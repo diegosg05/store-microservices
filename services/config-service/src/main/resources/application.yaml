@@ -9,8 +9,8 @@ spring:
     config:
       server:
         git:
-          uri: git@github.com:diegosg05/store-microservices.git
           default-label: main
+          uri: https://github.com/diegosg05/store-microservices
           search-paths: config-repo
 
 
